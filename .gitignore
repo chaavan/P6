@@ -1,0 +1,53 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual environment
+venv/
+ENV/
+env/
+.venv/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Data files
+*.npy
+*.keras
+*.h5
+*.pkl
+*.csv
+
+# Image files
+*.jpg
+*.png
+*.jpeg
+
+# Directories to exclude
+dogcat/
+kaggle/
+kaggle_cats_dogs/
+models/data/
+results/
