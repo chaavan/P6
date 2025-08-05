@@ -13,25 +13,21 @@ class BasicModel(Model):
             Rescaling(1./255, input_shape=input_shape),
             
             # First convolutional block
-            layers.Conv2D(32, (3, 3), activation='relu', padding='same'),
+            layers.Conv2D(16, (3, 3), activation='relu', padding='same'),
             layers.MaxPooling2D((2, 2)),
             
             # Second convolutional block
-            layers.Conv2D(64, (3, 3), activation='relu', padding='same'),
+            layers.Conv2D(32, (3, 3), activation='relu', padding='same'),
             layers.MaxPooling2D((2, 2)),
-            
-            # Third convolutional block
-            layers.Conv2D(128, (3, 3), activation='relu', padding='same'),
-            layers.MaxPooling2D((2, 2)),
-            
-            # Fourth convolutional block to reduce spatial dimensions further
-            layers.Conv2D(128, (3, 3), activation='relu', padding='same'),
+
+            # Third convolutional block to reduce spatial dimensions further
+            layers.Conv2D(16, (3, 3), activation='relu', padding='same'), # Reduced filters
             layers.MaxPooling2D((2, 2)),
             
             # Flatten and dense layers
             layers.Flatten(),
-            layers.Dense(512, activation='relu'),
-            layers.Dropout(0.5),
+            layers.Dense(16, activation='relu'),
+            layers.Dropout(0.5), # Added dropout layer
             layers.Dense(categories_count, activation='softmax')
         ])
     

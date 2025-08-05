@@ -31,8 +31,28 @@ def get_datasets():
     return train_dataset, validation_dataset, test_dataset
 
 def get_transfer_datasets():
-    # Your code replaces this by loading the dataset
-    # you can use image_dataset_from_directory, similar to how the _split_data function is using it
-    train_dataset, validation_dataset, test_dataset = None, None, None
-    # ...
+    # Assuming dogcat dataset is in kaggle/dogcat/train and kaggle/dogcat/test
+    train_directory_transfer = 'dogcat/train'
+    test_directory_transfer = 'dogcat/test'
+
+    print('transfer learning train dataset:')
+    train_dataset, validation_dataset = image_dataset_from_directory(
+        train_directory_transfer,
+        label_mode='categorical',
+        color_mode='rgb',
+        batch_size=batch_size,
+        image_size=image_size,
+        validation_split=validation_split,
+        subset="both",
+        seed=47
+    )
+    print('transfer learning test dataset:')
+    test_dataset = image_dataset_from_directory(
+        test_directory_transfer,
+        label_mode='categorical',
+        color_mode='rgb',
+        batch_size=batch_size,
+        image_size=image_size,
+        shuffle=False
+    )
     return train_dataset, validation_dataset, test_dataset

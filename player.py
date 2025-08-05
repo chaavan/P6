@@ -33,6 +33,9 @@ from matplotlib.image import imread
 import cv2
 
 class UserWebcamPlayer:
+    def __init__(self):
+        self.model = models.load_model('results/basic_model_50_epochs_timestamp_1754380339.keras')
+
     def _process_frame(self, frame):
         frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
         width, height = frame.shape
@@ -75,47 +78,60 @@ class UserWebcamPlayer:
             print('Invalid position')
             return None
     
-    def _get_row_or_col(self, is_row):
-        try:
-            row_or_col = 'row' if is_row else 'col'
-            self._print_reference(row_or_col)
-            img = self._access_webcam()
-            emotion = self._get_emotion(img)
-            if type(emotion) is not int or emotion not in range(len(categories)):
-                print('Invalid emotion number {}'.format(emotion))
-                return None
-            print('Emotion detected as {} ({} {}). Enter \'text\' to use text input instead (0, 1 or 2). Otherwise, press Enter to continue.'.format(categories[emotion], row_or_col, emotion))
-            inp = input()
-            if inp == 'text':
-                return self._get_row_or_col_by_text()
-            return emotion
-        except Exception as e:
-            # error accessing the webcam, or processing the image
-            raise e
+    def _get_row_or_col(self, is_row, board_state):
+        while True:
+            try:
+                row_or_col_str = 'row' if is_row else 'col'
+                self._print_reference(row_or_col_str)
+                img = self._access_webcam()
+                emotion = self._get_emotion(img)
+                
+                if type(emotion) is not int or emotion not in range(len(categories)):
+                    print('Invalid emotion number {}. Please try again.'.format(emotion))
+                    continue
+                
+                print('Emotion detected as {} ({} {}). Enter \'text\' to use text input instead (0, 1 or 2). Otherwise, press Enter to continue.'.format(categories[emotion], row_or_col_str, emotion))
+                inp = input()
+                if inp == 'text':
+                    val = self._get_row_or_col_by_text()
+                else:
+                    val = emotion
+
+                if val is None or val not in range(BOARD_SIZE):
+                    print('Invalid input. Please enter 0, 1, or 2.')
+                    continue
+
+                # Validate the move against the board state
+                if is_row:
+                    temp_row = val
+                    temp_col = None # We don't have the column yet, so can't fully validate
+                else:
+                    temp_row = None # We don't have the row yet
+                    temp_col = val
+
+                # This partial validation is tricky. The full validation happens in get_move.
+                # For now, just ensure the value is within bounds.
+                return val
+            except Exception as e:
+                print(f"Error accessing webcam or processing image: {e}. Please try again.")
+                continue
     
     def _get_emotion(self, img) -> int:
-        # Your code goes here
-        #
-        # img an np array of size NxN (square), each pixel is a value between 0 to 255
-        # you have to resize this to image_size before sending to your model
-        # to show the image here, you can use:
-        # import matplotlib.pyplot as plt
-        # plt.imshow(img, cmap='gray', vmin=0, vmax=255)
-        # plt.show()
-        #
-        # You have to use your saved model, use resized img as input, and get one classification value out of it
-        # The classification value should be 0, 1, or 2 for neutral, happy or surprise respectively
-        model = models.load_model('results/basic_model_10_epochs_timestamp_1754311372.keras')
         img_resized = cv2.resize(img, image_size)
         img_rgb = cv2.cvtColor(img_resized, cv2.COLOR_GRAY2RGB)
         img_expanded = np.expand_dims(img_rgb, axis=0)
-        prediction = model.predict(img_expanded)
-        return np.argmax(prediction)
+        prediction = self.model.predict(img_expanded)
+        return int(np.argmax(prediction))
     
     def get_move(self, board_state):
-        row, col = None, None
-        while row is None:
-            row = self._get_row_or_col(True)
-        while col is None:
-            col = self._get_row_or_col(False)
-        return row, col
+        while True:
+            row = self._get_row_or_col(True, board_state)
+            col = self._get_row_or_col(False, board_state)
+
+            if row is not None and col is not None:
+                if board_state[row][col] is None:
+                    return row, col
+                else:
+                    print(f"Position ({row}, {col}) is already taken. Please choose an empty spot.")
+            else:
+                print("Invalid row or column detected. Please try again.")

@@ -48,8 +48,17 @@ if __name__ == "__main__":
     train_target_directory = train_directory
     test_target_directory = test_directory
 
-    copy_dataset(train_source_directory, train_target_directory, categories, train_size)
-    print('Train dataset have been extracted.')
-    
-    copy_dataset(test_source_directory, test_target_directory, categories, None)
-    print('Test dataset have been extracted.')
+    # Check if the target directories already contain the expected categories
+    train_extracted = all(os.path.exists(os.path.join(train_target_directory, cat)) for cat in categories)
+    test_extracted = all(os.path.exists(os.path.join(test_target_directory, cat)) for cat in categories)
+
+    if train_extracted and test_extracted:
+        print('Dataset already extracted. Skipping copy.')
+    else:
+        print('Extracting train dataset...')
+        copy_dataset(train_source_directory, train_target_directory, categories, train_size)
+        print('Train dataset have been extracted.')
+        
+        print('Extracting test dataset...')
+        copy_dataset(test_source_directory, test_target_directory, categories, None)
+        print('Test dataset have been extracted.')
